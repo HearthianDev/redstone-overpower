@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "redstoneoverpower:item/medium_echo_bud"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "redstoneoverpower:block/medium_echo_bud",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "redstoneoverpower:block/medium_echo_bud",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "redstoneoverpower:block/medium_echo_bud",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "redstoneoverpower:block/medium_echo_bud",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "redstoneoverpower:block/medium_echo_bud"
+    },
+    "facing=west": {
+      "model": "redstoneoverpower:block/medium_echo_bud",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

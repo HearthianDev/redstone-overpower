@@ -1,9 +1,10 @@
 package net.HearthianDev.redstoneoverpower.block.enums;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
-public enum PipeType implements StringIdentifiable {
+public enum PipeType implements StringRepresentable {
         NONE("none"),
         IN("input"),
         IN_HOPPER("input_hopper"),
@@ -19,7 +20,7 @@ public enum PipeType implements StringIdentifiable {
             return this.name;
         }
 
-        public String asString() {
+        public @NonNull String getSerializedName() {
             return this.name;
         }
 

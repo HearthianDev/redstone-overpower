@@ -1,9 +1,9 @@
 package net.HearthianDev.redstoneoverpower;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
-import net.minecraft.client.render.RenderLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.HearthianDev.redstoneoverpower.client.gui.screen.ingame.DuctScreen;
 
 import static net.HearthianDev.redstoneoverpower.utils.Initialiser.*;
@@ -12,13 +12,13 @@ public class RedstoneOverpowerClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
-		HandledScreens.register(DUCT_SCREEN_HANDLER, DuctScreen::new);
+		MenuScreens.register(DUCT_SCREEN_HANDLER, DuctScreen::new);
 
-		BlockRenderLayerMap.INSTANCE.putBlock(LOGICAL_COMPARATOR_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(SCULK_PULSER_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(SCULK_AMETHIST_CLUSTER_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(LARGE_SCULK_AMETHIST_BUD_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(MEDIUM_SCULK_AMETHIST_BUD_BLOCK, RenderLayer.getCutout());
-		BlockRenderLayerMap.INSTANCE.putBlock(SMALL_SCULK_AMETHIST_BUD_BLOCK, RenderLayer.getCutout());
+		BlockRenderLayerMap.putBlock(LOGICAL_COMPARATOR_BLOCK, ChunkSectionLayer.CUTOUT);
+		BlockRenderLayerMap.putBlock(SCULK_PULSER_BLOCK, ChunkSectionLayer.CUTOUT);
+		BlockRenderLayerMap.putBlock(ECHO_CLUSTER_BLOCK, ChunkSectionLayer.CUTOUT);
+		BlockRenderLayerMap.putBlock(LARGE_ECHO_BUD_BLOCK, ChunkSectionLayer.CUTOUT);
+		BlockRenderLayerMap.putBlock(MEDIUM_ECHO_BUD_BLOCK, ChunkSectionLayer.CUTOUT);
+		BlockRenderLayerMap.putBlock(SMALL_ECHO_BUD_BLOCK, ChunkSectionLayer.CUTOUT);
 	}
 }

@@ -1,8 +1,9 @@
 package net.HearthianDev.redstoneoverpower.block.enums;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.NonNull;
 
-public enum SculkChamberMode implements StringIdentifiable {
+public enum SculkChamberMode implements StringRepresentable {
     LISTEN("listen"),
     CHARGED("charged"),
     ISOLATED("isolated"),
@@ -18,7 +19,7 @@ public enum SculkChamberMode implements StringIdentifiable {
         return this.name;
     }
 
-    public String asString() {
+    public @NonNull String getSerializedName() {
         return this.name;
     }
 }

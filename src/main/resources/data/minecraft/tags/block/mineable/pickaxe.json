@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "redstoneoverpower:duct",
+    "redstoneoverpower:budding_echo",
+    "redstoneoverpower:echo_cluster",
+    "redstoneoverpower:large_echo_bud",
+    "redstoneoverpower:medium_echo_bud",
+    "redstoneoverpower:small_echo_bud"
+  ]
+}

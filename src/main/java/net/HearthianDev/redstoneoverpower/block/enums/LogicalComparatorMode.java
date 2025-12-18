@@ -1,8 +1,9 @@
 package net.HearthianDev.redstoneoverpower.block.enums;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
+import org.jspecify.annotations.NonNull;
 
-public enum LogicalComparatorMode implements StringIdentifiable {
+public enum LogicalComparatorMode implements StringRepresentable {
         AND("and"),
         OR("or"),
         XOR("xor"),
@@ -20,7 +21,7 @@ public enum LogicalComparatorMode implements StringIdentifiable {
             return this.name;
         }
 
-        public String asString() {
+        public @NonNull String getSerializedName() {
             return this.name;
         }
 }

@@ -3,34 +3,53 @@ package net.HearthianDev.redstoneoverpower.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
-import net.minecraft.block.HopperBlock;
-import net.minecraft.block.entity.*;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.*;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.HearthianDev.redstoneoverpower.block.entity.DuctBlockEntity;
 import net.HearthianDev.redstoneoverpower.block.enums.PipeType;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
 import static net.HearthianDev.redstoneoverpower.utils.Initialiser.*;
 
-public class DuctBlock extends BlockWithEntity implements Waterloggable {
-    public static final MapCodec<DuctBlock> CODEC = createCodec(DuctBlock::new);
+public class DuctBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+    public static final MapCodec<DuctBlock> CODEC = simpleCodec(DuctBlock::new);
     public static final BooleanProperty ENABLED;
     public static final EnumProperty<PipeType> NORTH;
     public static final EnumProperty<PipeType> EAST;
@@ -38,31 +57,31 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
     public static final EnumProperty<PipeType> WEST;
     public static final EnumProperty<PipeType> UP;
     public static final EnumProperty<PipeType> DOWN;
-    public static final DirectionProperty FACING;
+    public static final EnumProperty<Direction> FACING;
     public static final BooleanProperty WATERLOGGED;
     public static final Map<Direction, EnumProperty<PipeType>> FACING_PROPERTIES;
     private static final Direction[] FACINGS;
 
     protected final VoxelShape[] facingsToShape;
 
-    public DuctBlock(Settings settings) {
+    public DuctBlock(Properties settings) {
         super(settings);
         this.facingsToShape = this.generateFacingsToShapeMap();
-        this.setDefaultState(this.stateManager.getDefaultState()
-            .with(ENABLED, true)
-            .with(WATERLOGGED, false)
-            .with(NORTH, PipeType.NONE)
-            .with(EAST, PipeType.NONE)
-            .with(SOUTH, PipeType.NONE)
-            .with(WEST, PipeType.NONE)
-            .with(UP, PipeType.NONE)
-            .with(DOWN, PipeType.NONE)
-            .with(FACING, Direction.NORTH)
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(ENABLED, true)
+            .setValue(WATERLOGGED, false)
+            .setValue(NORTH, PipeType.NONE)
+            .setValue(EAST, PipeType.NONE)
+            .setValue(SOUTH, PipeType.NONE)
+            .setValue(WEST, PipeType.NONE)
+            .setValue(UP, PipeType.NONE)
+            .setValue(DOWN, PipeType.NONE)
+            .setValue(FACING, Direction.NORTH)
         );
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
+    protected @NonNull MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
 
@@ -71,17 +90,17 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
 
         float f = 0.5f - radius;
         float g = 0.5f + radius;
-        VoxelShape voxelShape = Block.createCuboidShape(f * 16.0f, f * 16.0f, f * 16.0f, g * 16.0f, g * 16.0f, g * 16.0f);
+        VoxelShape voxelShape = Block.box(f * 16.0f, f * 16.0f, f * 16.0f, g * 16.0f, g * 16.0f, g * 16.0f);
         VoxelShape[] voxelShapes = new VoxelShape[FACINGS.length];
         for (int i = 0; i < FACINGS.length; ++i) {
             Direction direction = FACINGS[i];
-            voxelShapes[i] = VoxelShapes.cuboid(
-                0.5 + Math.min((-radius), (double)direction.getOffsetX() * 0.5),
-                0.5 + Math.min((-radius), (double)direction.getOffsetY() * 0.5),
-                0.5 + Math.min((-radius), (double)direction.getOffsetZ() * 0.5),
-                0.5 + Math.max(radius, (double)direction.getOffsetX() * 0.5),
-                0.5 + Math.max(radius, (double)direction.getOffsetY() * 0.5),
-                0.5 + Math.max(radius, (double)direction.getOffsetZ() * 0.5)
+            voxelShapes[i] = Shapes.box(
+                0.5 + Math.min((-radius), (double)direction.getStepX() * 0.5),
+                0.5 + Math.min((-radius), (double)direction.getStepY() * 0.5),
+                0.5 + Math.min((-radius), (double)direction.getStepZ() * 0.5),
+                0.5 + Math.max(radius, (double)direction.getStepX() * 0.5),
+                0.5 + Math.max(radius, (double)direction.getStepY() * 0.5),
+                0.5 + Math.max(radius, (double)direction.getStepZ() * 0.5)
             );
         }
         VoxelShape[] voxelShapes2 = new VoxelShape[64];
@@ -89,7 +108,7 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
             VoxelShape voxelShape2 = voxelShape;
             for (int k = 0; k < FACINGS.length; ++k) {
                 if ((j & 1 << k) == 0) continue;
-                voxelShape2 = VoxelShapes.union(voxelShape2, voxelShapes[k]);
+                voxelShape2 = Shapes.or(voxelShape2, voxelShapes[k]);
             }
             voxelShapes2[j] = voxelShape2;
         }
@@ -98,19 +117,19 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
-        return BlockRenderType.MODEL;
+    public @NonNull RenderShape getRenderShape(@NonNull BlockState state) {
+        return RenderShape.MODEL;
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public @NonNull VoxelShape getShape(@NonNull BlockState state, @NonNull BlockGetter world, @NonNull BlockPos pos, @NonNull CollisionContext context) {
         return this.facingsToShape[this.getConnectionMask(state)];
     }
 
     protected int getConnectionMask(BlockState state) {
         int i = 0;
         for (int j = 0; j < FACINGS.length; ++j) {
-            if (state.get(FACING_PROPERTIES.get(FACINGS[j])) == PipeType.NONE) continue;
+            if (state.getValue(FACING_PROPERTIES.get(FACINGS[j])) == PipeType.NONE) continue;
             i |= 1 << j;
         }
 
@@ -119,33 +138,33 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
 
     @Nullable
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(@NonNull BlockPos pos, @NonNull BlockState state) {
         return new DuctBlockEntity(pos, state);
     }
 
     @Override
     @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient ? null : DuctBlock.validateTicker(type, DUCT_BLOCK_ENTITY, DuctBlockEntity::serverTick);
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, @NonNull BlockState state, @NonNull BlockEntityType<T> type) {
+        return world.isClientSide() ? null : DuctBlock.createTickerHelper(type, DUCT_BLOCK_ENTITY, DuctBlockEntity::serverTick);
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        World world = ctx.getWorld();
-        BlockPos pos = ctx.getBlockPos();
-        Direction dir = ctx.getSide().getOpposite();
-        FluidState fluidState = ctx.getWorld().getFluidState(ctx.getBlockPos());
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        Level world = ctx.getLevel();
+        BlockPos pos = ctx.getClickedPos();
+        Direction dir = ctx.getClickedFace().getOpposite();
+        FluidState fluidState = ctx.getLevel().getFluidState(ctx.getClickedPos());
 
-        return this.getDefaultState()
-            .with(DOWN, getSideMode(world, pos.down(), Direction.DOWN, dir))
-            .with(UP, getSideMode(world, pos.up(), Direction.UP, dir))
-            .with(NORTH, getSideMode(world, pos.north(), Direction.NORTH, dir))
-            .with(EAST, getSideMode(world, pos.east(), Direction.EAST, dir))
-            .with(SOUTH, getSideMode(world, pos.south(), Direction.SOUTH, dir))
-            .with(WEST, getSideMode(world, pos.west(), Direction.WEST, dir))
-            .with(FACING, dir)
-            .with(ENABLED, true)
-            .with(WATERLOGGED, fluidState.getFluid() == Fluids.WATER);
+        return this.defaultBlockState()
+            .setValue(DOWN, getSideMode(world, pos.below(), Direction.DOWN, dir))
+            .setValue(UP, getSideMode(world, pos.above(), Direction.UP, dir))
+            .setValue(NORTH, getSideMode(world, pos.north(), Direction.NORTH, dir))
+            .setValue(EAST, getSideMode(world, pos.east(), Direction.EAST, dir))
+            .setValue(SOUTH, getSideMode(world, pos.south(), Direction.SOUTH, dir))
+            .setValue(WEST, getSideMode(world, pos.west(), Direction.WEST, dir))
+            .setValue(FACING, dir)
+            .setValue(ENABLED, true)
+            .setValue(WATERLOGGED, fluidState.getType() == Fluids.WATER);
     }
 
 /*
@@ -154,12 +173,12 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
     If the adjacent block is a opposite or a hopper oriented to the block, should be in
     In any other case, should be none
  */
-    private PipeType getSideMode(World world, BlockPos neighborPos, Direction side,  Direction facing) {
+    private PipeType getSideMode(Level world, BlockPos neighborPos, Direction side,  Direction facing) {
         if (world.getBlockEntity(neighborPos) instanceof DuctBlockEntity ductBlockEntity) {
             if (facing.equals(side)) {
                 return PipeType.OUT;
             }
-            if (ductBlockEntity.getCachedState().get(FACING).equals(side.getOpposite())) {
+            if (ductBlockEntity.getBlockState().getValue(FACING).equals(side.getOpposite())) {
                 return PipeType.IN;
             }
 
@@ -167,7 +186,7 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
         }
 
         if (world.getBlockEntity(neighborPos) instanceof HopperBlockEntity hopperBlockEntity) {
-            if (hopperBlockEntity.getCachedState().get(HopperBlock.FACING).equals(side.getOpposite())) {
+            if (hopperBlockEntity.getBlockState().getValue(HopperBlock.FACING).equals(side.getOpposite())) {
                 return side.getAxis() == Direction.Axis.Y ? PipeType.IN : PipeType.IN_HOPPER;
             }
         }
@@ -176,126 +195,129 @@ public class DuctBlock extends BlockWithEntity implements Waterloggable {
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        if (!state.canPlaceAt(world, pos)) {
-            world.scheduleBlockTick(pos, this, 1);
+    protected @NonNull BlockState updateShape(BlockState state, @NonNull LevelReader world, @NonNull ScheduledTickAccess tickView, @NonNull BlockPos pos, @NonNull Direction direction, @NonNull BlockPos neighborPos, @NonNull BlockState neighborState, @NonNull RandomSource random) {
+        if (!state.canSurvive(world, pos)) {
+            ((LevelAccessor) world).scheduleTick(pos, this, 1);
 
-            return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+            return super.updateShape(state, world, tickView, pos, direction, neighborPos, neighborState, random);
         }
 
-        if (state.get(WATERLOGGED)) {
-            world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
+        if (state.getValue(WATERLOGGED)) {
+            ((LevelAccessor) world).scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
         }
 
         // If duct/hopper facing here, IN
-        if (neighborState.isOf(DUCT_BLOCK)) {
-            if (neighborState.get(FACING).equals(direction.getOpposite())) {
-                if (state.get(FACING).equals(direction)) {
-                    return state.with(FACING_PROPERTIES.get(direction), PipeType.OUT);
+        if (neighborState.is(DUCT_BLOCK)) {
+            if (neighborState.getValue(FACING).equals(direction.getOpposite())) {
+                if (state.getValue(FACING).equals(direction)) {
+                    return state.setValue(FACING_PROPERTIES.get(direction), PipeType.OUT);
                 }
 
-                return state.with(FACING_PROPERTIES.get(direction), PipeType.IN);
+                return state.setValue(FACING_PROPERTIES.get(direction), PipeType.IN);
             }
 
             PipeType opposite;
 
-            if ((opposite = PipeType.getOpposite(neighborState.get(FACING_PROPERTIES.get(direction.getOpposite())))) != null) {
-                return state.with(FACING_PROPERTIES.get(direction), opposite);
+            if ((opposite = PipeType.getOpposite(neighborState.getValue(FACING_PROPERTIES.get(direction.getOpposite())))) != null) {
+                return state.setValue(FACING_PROPERTIES.get(direction), opposite);
             }
 
-            return state.with(FACING_PROPERTIES.get(direction), PipeType.NONE);
+            return state.setValue(FACING_PROPERTIES.get(direction), PipeType.NONE);
         }
-        if (neighborState.isOf(Blocks.HOPPER) && neighborState.get(HopperBlock.FACING).equals(direction.getOpposite())) {
-            return state.with(FACING_PROPERTIES.get(direction), direction.getAxis() == Direction.Axis.Y ? PipeType.IN : PipeType.IN_HOPPER);
+        if (neighborState.is(Blocks.HOPPER) && neighborState.getValue(HopperBlock.FACING).equals(direction.getOpposite())) {
+            return state.setValue(FACING_PROPERTIES.get(direction), direction.getAxis() == Direction.Axis.Y ? PipeType.IN : PipeType.IN_HOPPER);
         }
 
-        return state.with(FACING_PROPERTIES.get(direction), DuctBlockEntity.getInventoryAt((World) world, neighborPos) != null
-            ? PipeType.OUT
-            : PipeType.NONE
+        return state.setValue(FACING_PROPERTIES.get(direction), DuctBlockEntity.getInventoryAt((Level) world, neighborPos) != null
+                ? PipeType.OUT
+                : PipeType.NONE
         );
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (world.isClient) {
-            return ActionResult.SUCCESS;
+    public @NonNull InteractionResult useWithoutItem(@NonNull BlockState state, Level world, @NonNull BlockPos pos, @NonNull Player player, @NonNull BlockHitResult hit) {
+        if (world.isClientSide()) {
+            return InteractionResult.SUCCESS;
         }
 
-        if (player.getStackInHand(player.getActiveHand()).getItem().asItem().equals(this.asItem()) && world.getBlockEntity(pos.offset(hit.getSide())) instanceof DuctBlockEntity) {
-            world.setBlockState(pos, state.with(FACING_PROPERTIES.get(hit.getSide()), PipeType.IN));
+        if (player.getItemInHand(player.getUsedItemHand()).getItem().asItem().equals(this.asItem()) && world.getBlockEntity(pos.relative(hit.getDirection())) instanceof DuctBlockEntity) {
+            world.setBlockAndUpdate(pos, state.setValue(FACING_PROPERTIES.get(hit.getDirection()), PipeType.IN));
 
-            return ActionResult.CONSUME;
+            return InteractionResult.CONSUME;
         }
 
         if (world.getBlockEntity(pos) instanceof DuctBlockEntity ductBlockEntity) {
-            player.openHandledScreen(ductBlockEntity);
+            player.openMenu(ductBlockEntity);
         }
 
-        return ActionResult.CONSUME;
+        return InteractionResult.CONSUME;
     }
 
     //This method will drop all items onto the ground when the block is broken
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (state.getBlock() != newState.getBlock()) {
-            if (world.getBlockEntity(pos) instanceof DuctBlockEntity ductBlockEntity) {
-                ItemScatterer.spawn(world, pos, ductBlockEntity);
-                // update comparators
-                world.updateComparators(pos,this);
-            }
-            super.onStateReplaced(state, world, pos, newState, moved);
-        }
+    public void affectNeighborsAfterRemoval(@NonNull BlockState state, @NonNull ServerLevel world, @NonNull BlockPos pos, boolean moved) {
+        Containers.updateNeighboursAfterDestroy(state, world, pos);
     }
 
     @Override
-    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
-        if (oldState.isOf(state.getBlock())) {
+    protected boolean hasAnalogOutputSignal(@NonNull BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getAnalogOutputSignal(@NonNull BlockState state, Level world, @NonNull BlockPos pos, @NonNull Direction direction) {
+        return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos));
+    }
+
+    @Override
+    public void onPlace(BlockState state, @NonNull Level world, @NonNull BlockPos pos, BlockState oldState, boolean notify) {
+        if (oldState.is(state.getBlock())) {
             return;
         }
         this.updateEnabled(world, pos, state);
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-        this.updateEnabled(world, pos, state);
+    protected void neighborChanged(@NonNull BlockState state, @NonNull Level world, @NonNull BlockPos pos, @NonNull Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
+        super.neighborChanged(state, world, pos, sourceBlock, wireOrientation, notify);
     }
 
-    private void updateEnabled(World world, BlockPos pos, BlockState state) {
-        boolean isPowered = !world.isReceivingRedstonePower(pos);
+    private void updateEnabled(Level world, BlockPos pos, BlockState state) {
+        boolean isPowered = !world.hasNeighborSignal(pos);
 
-        if (isPowered != state.get(ENABLED)) {
-            world.setBlockState(pos, state.with(ENABLED, isPowered), Block.NOTIFY_LISTENERS);
+        if (isPowered != state.getValue(ENABLED)) {
+            world.setBlock(pos, state.setValue(ENABLED, isPowered), Block.UPDATE_CLIENTS);
         }
     }
 
     @Override
-    public FluidState getFluidState(BlockState state) {
-        if (state.get(WATERLOGGED)) {
-            return Fluids.WATER.getStill(false);
+    public @NonNull FluidState getFluidState(BlockState state) {
+        if (state.getValue(WATERLOGGED)) {
+            return Fluids.WATER.getSource(false);
         }
         return super.getFluidState(state);
     }
 
     @Override
-    public boolean isTransparent(BlockState state, BlockView world, BlockPos pos) {
+    protected boolean propagatesSkylightDown(@NonNull BlockState state) {
         return true;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(ENABLED, NORTH, EAST, SOUTH, WEST, UP, DOWN, FACING, WATERLOGGED);
     }
 
     static {
-        ENABLED = Properties.ENABLED;
-        NORTH = EnumProperty.of("north", PipeType.class);
-        EAST = EnumProperty.of("east", PipeType.class);
-        SOUTH = EnumProperty.of("south", PipeType.class);
-        WEST = EnumProperty.of("west", PipeType.class);
-        UP = EnumProperty.of("up", PipeType.class);
-        DOWN = EnumProperty.of("down", PipeType.class);
-        FACING = Properties.FACING;
-        WATERLOGGED = Properties.WATERLOGGED;
+        ENABLED = BlockStateProperties.ENABLED;
+        NORTH = EnumProperty.create("north", PipeType.class);
+        EAST = EnumProperty.create("east", PipeType.class);
+        SOUTH = EnumProperty.create("south", PipeType.class);
+        WEST = EnumProperty.create("west", PipeType.class);
+        UP = EnumProperty.create("up", PipeType.class);
+        DOWN = EnumProperty.create("down", PipeType.class);
+        FACING = BlockStateProperties.FACING;
+        WATERLOGGED = BlockStateProperties.WATERLOGGED;
         FACING_PROPERTIES = ImmutableMap.copyOf(Util.make(Maps.newEnumMap(Direction.class), directions -> {
             directions.put(Direction.NORTH, NORTH);
             directions.put(Direction.EAST, EAST);

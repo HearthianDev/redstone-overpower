@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "redstoneoverpower:block/echo_cluster",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "redstoneoverpower:block/echo_cluster",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "redstoneoverpower:block/echo_cluster",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "redstoneoverpower:block/echo_cluster",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "redstoneoverpower:block/echo_cluster"
+    },
+    "facing=west": {
+      "model": "redstoneoverpower:block/echo_cluster",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

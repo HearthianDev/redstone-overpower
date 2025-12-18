@@ -1,79 +1,80 @@
 package net.HearthianDev.redstoneoverpower.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.AbstractRedstoneGateBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import net.HearthianDev.redstoneoverpower.block.entity.LogicalComparatorBlockEntity;
 import net.HearthianDev.redstoneoverpower.block.enums.LogicalComparatorMode;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DiodeBlock;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import org.jspecify.annotations.NonNull;
 
-public class LogicalComparatorBlock extends AbstractRedstoneGateBlock implements BlockEntityProvider {
-    public static final MapCodec<LogicalComparatorBlock> CODEC = createCodec(LogicalComparatorBlock::new);
+public class LogicalComparatorBlock extends DiodeBlock implements EntityBlock {
+    public static final MapCodec<LogicalComparatorBlock> CODEC = simpleCodec(LogicalComparatorBlock::new);
 
     public static final EnumProperty<LogicalComparatorMode> MODE;
 
-    public LogicalComparatorBlock(Settings settings) {
+    public LogicalComparatorBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState()
-            .with(FACING, Direction.NORTH)
-            .with(POWERED, false)
-            .with(MODE, LogicalComparatorMode.AND)
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(FACING, Direction.NORTH)
+            .setValue(POWERED, false)
+            .setValue(MODE, LogicalComparatorMode.AND)
         );
     }
 
     @Override
-    protected MapCodec<? extends AbstractRedstoneGateBlock> getCodec() {
+    protected @NonNull MapCodec<? extends DiodeBlock> codec() {
         return CODEC;
     }
 
     @Override
-    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(@NonNull BlockPos pos, @NonNull BlockState state) {
         return new LogicalComparatorBlockEntity(pos, state);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, MODE, POWERED);
     }
 
     @Override
-    protected int getUpdateDelayInternal(BlockState state) {
+    protected int getDelay(@NonNull BlockState state) {
         return 2;
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!player.getAbilities().allowModifyWorld) {
-            return ActionResult.PASS;
+    public @NonNull InteractionResult useWithoutItem(@NonNull BlockState state, @NonNull Level world, @NonNull BlockPos pos, Player player, @NonNull BlockHitResult hit) {
+        if (!player.getAbilities().mayBuild) {
+            return InteractionResult.PASS;
         } else {
             state = state.cycle(MODE);
-            world.setBlockState(pos, state, 3);
+            world.setBlock(pos, state, 3);
             this.update(world, pos, state);
 
-            return ActionResult.success(world.isClient);
+            return InteractionResult.SUCCESS;
         }
     }
 
-    protected boolean hasPower(World world, BlockPos pos, BlockState state) {
-        Direction direction = state.get(FACING);
-        Direction rightDir = direction.rotateYClockwise();
-        Direction leftDir = direction.rotateYCounterclockwise();
-        int rightInput = world.getEmittedRedstonePower(pos.offset(rightDir), rightDir, this.getSideInputFromGatesOnly());
-        int leftInput = world.getEmittedRedstonePower(pos.offset(leftDir), leftDir, this.getSideInputFromGatesOnly());
+    protected boolean shouldTurnOn(Level world, BlockPos pos, BlockState state) {
+        Direction direction = state.getValue(FACING);
+        Direction rightDir = direction.getClockWise();
+        Direction leftDir = direction.getCounterClockWise();
+        int rightInput = world.getControlInputSignal(pos.relative(rightDir), rightDir, this.sideInputDiodesOnly());
+        int leftInput = world.getControlInputSignal(pos.relative(leftDir), leftDir, this.sideInputDiodesOnly());
         boolean right = rightInput > 0;
         boolean left = leftInput > 0;
 
-        return switch(state.get(MODE)) {
+        return switch(state.getValue(MODE)) {
             case AND -> right && left;
             case OR -> right || left;
             case XOR -> right != left;
@@ -83,8 +84,8 @@ public class LogicalComparatorBlock extends AbstractRedstoneGateBlock implements
         };
     }
 
-    private void update(World world, BlockPos pos, BlockState state) {
-        int i = this.hasPower(world, pos, state) ? 15 : 0;
+    private void update(Level world, BlockPos pos, BlockState state) {
+        int i = this.shouldTurnOn(world, pos, state) ? 15 : 0;
         BlockEntity blockEntity = world.getBlockEntity(pos);
         int j = 0;
         if (blockEntity instanceof LogicalComparatorBlockEntity logicalComparatorBlockEntity) {
@@ -93,19 +94,19 @@ public class LogicalComparatorBlock extends AbstractRedstoneGateBlock implements
         }
 
         if (j != i) {
-            boolean bl = this.hasPower(world, pos, state);
-            boolean bl2 = state.get(POWERED);
+            boolean bl = this.shouldTurnOn(world, pos, state);
+            boolean bl2 = state.getValue(POWERED);
             if (bl2 && !bl) {
-                world.setBlockState(pos, state.with(POWERED, false), 2);
+                world.setBlock(pos, state.setValue(POWERED, false), 2);
             } else if (!bl2 && bl) {
-                world.setBlockState(pos, state.with(POWERED, true), 2);
+                world.setBlock(pos, state.setValue(POWERED, true), 2);
             }
 
-            this.updateTarget(world, pos, state);
+            this.updateNeighborsInFront(world, pos, state);
         }
     }
 
     static {
-        MODE = EnumProperty.of("mode", LogicalComparatorMode.class);
+        MODE = EnumProperty.create("mode", LogicalComparatorMode.class);
     }
 }

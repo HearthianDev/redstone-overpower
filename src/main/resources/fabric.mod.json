@@ -11,7 +11,7 @@
 		"homepage": "https://github.com/John-Development",
 		"sources": "https://github.com/John-Development/redstone-overpower"
 	},
-	"license": "CC0-1.0",
+	"license": "GPL-3.0",
 	"icon": "assets/redstoneoverpower/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -23,15 +23,11 @@
 		]
 	},
 	"mixins": [
-      	"redstoneoverpower.mixins.json",
-		{
-			"config": "redstoneoverpower.client.mixins.json",
-			"environment": "client"
-		}
+      	"redstoneoverpower.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": "~1.21",
+		"minecraft": ">=1.21.3",
 		"java": ">=21",
 		"fabric-api": "*"
 	},

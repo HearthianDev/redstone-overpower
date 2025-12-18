@@ -1,39 +1,40 @@
 package net.HearthianDev.redstoneoverpower.block.screen;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ArrayPropertyDelegate;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
 import net.HearthianDev.redstoneoverpower.block.entity.DuctBlockEntity;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.NonNull;
 
 import static net.HearthianDev.redstoneoverpower.utils.Initialiser.DUCT_SCREEN_HANDLER;
 
-public class DuctScreenHandler extends ScreenHandler {
+public class DuctScreenHandler extends AbstractContainerMenu {
   public static final int SLOT_COUNT = 1;
-  private final Inventory inventory;
-  private final PropertyDelegate propertyDelegate;
+  private final Container inventory;
+  private final ContainerData propertyDelegate;
 
-  public DuctScreenHandler(int syncId, PlayerInventory playerInventory) {
-    this(syncId, playerInventory, new SimpleInventory(SLOT_COUNT), new ArrayPropertyDelegate(SLOT_COUNT));
+  public DuctScreenHandler(int syncId, Inventory playerInventory) {
+    this(syncId, playerInventory, new SimpleContainer(SLOT_COUNT), new SimpleContainerData(SLOT_COUNT));
   }
 
-  public DuctScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate) {
+  public DuctScreenHandler(int syncId, Inventory playerInventory, Container inventory, ContainerData propertyDelegate) {
     super(DUCT_SCREEN_HANDLER, syncId);
     this.propertyDelegate = propertyDelegate;
     this.inventory = inventory;
-    checkSize(inventory, SLOT_COUNT);
-    inventory.onOpen(playerInventory.player);
-    this.addProperties(propertyDelegate);
+    checkContainerSize(inventory, SLOT_COUNT);
+    inventory.startOpen(playerInventory.player);
+    this.addDataSlots(propertyDelegate);
     this.addSlots(playerInventory);
   }
 
-  private void addSlots(PlayerInventory playerInventory) {
+  private void addSlots(Inventory playerInventory) {
     int j;
 
     // Duct inventory
@@ -51,20 +52,20 @@ public class DuctScreenHandler extends ScreenHandler {
   }
 
   @Override
-  public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+  public void clicked(int slotIndex, int button, @NonNull ClickType actionType, @NonNull Player player) {
     if (slotIndex == 0) {
-      if (actionType == SlotActionType.PICKUP && getCursorStack().isEmpty() && !getSlot(slotIndex).hasStack()) {
+      if (actionType == ClickType.PICKUP && getCarried().isEmpty() && !getSlot(slotIndex).hasItem()) {
         this.toggleSlot(slotIndex);
       }
     }
 
-    super.onSlotClick(slotIndex, button, actionType, player);
+    super.clicked(slotIndex, button, actionType, player);
   }
 
   public void toggleSlot(int slot) {
     DuctSlot ductSlot = (DuctSlot)this.getSlot(slot);
-    this.propertyDelegate.set(ductSlot.id, this.isSlotDisabled(slot) ? DuctBlockEntity.FILTER_DISABLED : DuctBlockEntity.FILTER_ENABLED);
-    this.sendContentUpdates();
+    this.propertyDelegate.set(ductSlot.index, this.isSlotDisabled(slot) ? DuctBlockEntity.FILTER_DISABLED : DuctBlockEntity.FILTER_ENABLED);
+    this.broadcastChanges();
   }
 
   public boolean isSlotDisabled(int slot) {
@@ -76,35 +77,35 @@ public class DuctScreenHandler extends ScreenHandler {
   }
 
   @Override
-  public boolean canUse(PlayerEntity player) {
-    return this.inventory.canPlayerUse(player);
+  public boolean stillValid(@NonNull Player player) {
+    return this.inventory.stillValid(player);
   }
 
   @Override
-  public ItemStack quickMove(PlayerEntity player, int slot) {
+  public @NonNull ItemStack quickMoveStack(@NonNull Player player, int slot) {
     ItemStack itemStack = ItemStack.EMPTY;
     Slot slot2 = this.slots.get(slot);
-    if (slot2.hasStack()) {
-      ItemStack itemStack2 = slot2.getStack();
+    if (slot2.hasItem()) {
+      ItemStack itemStack2 = slot2.getItem();
       itemStack = itemStack2.copy();
-      if (slot < this.inventory.size()
-        ? !this.insertItem(itemStack2, this.inventory.size(), this.slots.size(), true)
-        : !this.insertItem(itemStack2, 0, this.inventory.size(), false)
+      if (slot < this.inventory.getContainerSize()
+        ? !this.moveItemStackTo(itemStack2, this.inventory.getContainerSize(), this.slots.size(), true)
+        : !this.moveItemStackTo(itemStack2, 0, this.inventory.getContainerSize(), false)
       ) {
         return ItemStack.EMPTY;
       }
       if (itemStack2.isEmpty()) {
-        slot2.setStack(ItemStack.EMPTY);
+        slot2.setByPlayer(ItemStack.EMPTY);
       } else {
-        slot2.markDirty();
+        slot2.setChanged();
       }
     }
     return itemStack;
   }
 
   @Override
-  public void onClosed(PlayerEntity player) {
-    super.onClosed(player);
-    this.inventory.onClose(player);
+  public void removed(@NonNull Player player) {
+    super.removed(player);
+    this.inventory.stopOpen(player);
   }
 }

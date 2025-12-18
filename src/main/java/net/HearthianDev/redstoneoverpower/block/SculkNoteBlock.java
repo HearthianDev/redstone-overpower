@@ -1,96 +1,109 @@
 package net.HearthianDev.redstoneoverpower.block;
 
-import net.minecraft.block.*;
-import net.minecraft.block.NoteBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.stat.Stats;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.event.Vibrations;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.NoteBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import static net.HearthianDev.redstoneoverpower.utils.Initialiser.NOTE_BLOCK_SOUND_EVENT;
 
 public class SculkNoteBlock extends Block {
     public static final BooleanProperty POWERED;
-    public static final IntProperty NOTE;
+    public static final IntegerProperty NOTE;
 
-    public SculkNoteBlock(Settings settings) {
+    public SculkNoteBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(NOTE, 0).with(POWERED, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(NOTE, 0).setValue(POWERED, false));
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-        boolean isPowered = world.isReceivingRedstonePower(pos);
-        if (isPowered != state.get(POWERED)) {
+    protected void neighborChanged(BlockState state, Level world, @NonNull BlockPos pos, @NonNull Block sourceBlock, @Nullable Orientation wireOrientation, boolean notify) {
+        boolean isPowered = world.hasNeighborSignal(pos);
+        if (isPowered != state.getValue(POWERED)) {
             if (isPowered) {
                 this.playNote(state, world, pos);
             }
-            world.setBlockState(pos, state.with(POWERED, isPowered), Block.NOTIFY_ALL);
+            world.setBlock(pos, state.setValue(POWERED, isPowered), Block.UPDATE_ALL);
         }
     }
 
-    private void playNote(BlockState state, World world, BlockPos pos) {
-        if (world.getBlockState(pos.up()).isAir()) {
-            world.addSyncedBlockEvent(pos, this, 0, 0);
-            world.emitGameEvent(
-                Vibrations.getResonation(state.get(NOTE) + 1),
+    private void playNote(BlockState state, Level world, BlockPos pos) {
+        if (world.getBlockState(pos.above()).isAir()) {
+            world.blockEvent(pos, this, 0, 0);
+            world.gameEvent(
+                VibrationSystem.getResonanceEventByFrequency(state.getValue(NOTE) + 1),
                 pos,
-                GameEvent.Emitter.of(state)
+                GameEvent.Context.of(state)
             );
         }
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        ItemStack itemStack = player.getStackInHand(player.getActiveHand());
-        if (itemStack.isIn(ItemTags.NOTEBLOCK_TOP_INSTRUMENTS) && hit.getSide() == Direction.UP) {
-            return ActionResult.PASS;
+    public @NonNull InteractionResult useWithoutItem(@NonNull BlockState state, @NonNull Level world, @NonNull BlockPos pos, Player player, @NonNull BlockHitResult hit) {
+        ItemStack itemStack = player.getItemInHand(player.getUsedItemHand());
+        if (itemStack.is(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS) && hit.getDirection() == Direction.UP) {
+            return InteractionResult.PASS;
         }
-        if (world.isClient) {
-            return ActionResult.SUCCESS;
+        if (world.isClientSide()) {
+            return InteractionResult.SUCCESS;
         }
         state = state.cycle(NOTE);
-        world.setBlockState(pos, state, Block.NOTIFY_ALL);
+        world.setBlock(pos, state, Block.UPDATE_ALL);
         this.playNote(state, world, pos);
-        player.incrementStat(Stats.TUNE_NOTEBLOCK);
+        player.awardStat(Stats.TUNE_NOTEBLOCK);
 
-        return ActionResult.CONSUME;
+        return InteractionResult.CONSUME;
     }
 
     @Override
-    public void onBlockBreakStart(BlockState state, World world, BlockPos pos, PlayerEntity player) {
-        if (world.isClient) {
+    public void attack(@NonNull BlockState state, Level world, @NonNull BlockPos pos, @NonNull Player player) {
+        if (world.isClientSide()) {
             return;
         }
         this.playNote(state, world, pos);
-        player.incrementStat(Stats.PLAY_NOTEBLOCK);
+        player.awardStat(Stats.PLAY_NOTEBLOCK);
     }
 
     @Override
-    public boolean onSyncedBlockEvent(BlockState state, World world, BlockPos pos, int type, int data) {
-        int i = state.get(NOTE);
-        world.addParticle(ParticleTypes.NOTE, (double)pos.getX() + 0.5, (double)pos.getY() + 1.2, (double)pos.getZ() + 0.5, (double)i / 24.0, 0.0, 0.0);
-        world.playSound(null,
+    public boolean triggerEvent(BlockState state, Level world, BlockPos pos, int type, int data) {
+        int i = state.getValue(NOTE);
+        world.addParticle(
+            ParticleTypes.NOTE,
+            (double)pos.getX() + 0.5,
+            (double)pos.getY() + 1.2,
+            (double)pos.getZ() + 0.5,
+            (double)i / 24.0,
+            0.0,
+            0.0
+        );
+        world.playSeededSound(
+            null,
             (double)pos.getX() + 0.5,
             (double)pos.getY() + 0.5,
             (double)pos.getZ() + 0.5,
             NOTE_BLOCK_SOUND_EVENT,
-            SoundCategory.RECORDS,
+            SoundSource.RECORDS,
             3.0f,
-            NoteBlock.getNotePitch(i),
+            NoteBlock.getPitchFromNote(i),
             world.random.nextLong()
         );
 
@@ -98,12 +111,12 @@ public class SculkNoteBlock extends Block {
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(POWERED, NOTE);
     }
 
     static {
-        POWERED = Properties.POWERED;
-        NOTE = IntProperty.of("note", 0, 14);
+        POWERED = BlockStateProperties.POWERED;
+        NOTE = IntegerProperty.create("note", 0, 14);
     }
 }
