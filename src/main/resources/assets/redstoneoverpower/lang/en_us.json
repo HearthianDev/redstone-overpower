@@ -11,6 +11,5 @@
 	"block.redstoneoverpower.small_echo_bud": "Small echo crystal cluster",
 	"container.redstoneoverpower.duct": "Duct item",
 	"gui.enable_filter": "Click to enable filter mode",
-	"gui.disable_filter": "Click to disable filter mode",
 	"subtitles.redstoneoverpower.sculk_note_block_sound": "Sculk noteblock"
 }

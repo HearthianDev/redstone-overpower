@@ -1,5 +1,6 @@
 package net.HearthianDev.redstoneoverpower.utils;
 
+import net.HearthianDev.redstoneoverpower.RedstoneOverpower;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
@@ -25,53 +26,52 @@ import net.HearthianDev.redstoneoverpower.block.entity.LogicalComparatorBlockEnt
 import net.HearthianDev.redstoneoverpower.block.entity.SculkChamberBlockEntity;
 import net.HearthianDev.redstoneoverpower.block.screen.DuctScreenHandler;
 
-import static net.HearthianDev.redstoneoverpower.RedstoneOverpower.MOD_ID;
 
 public class Initialiser {
   public static final LogicalComparatorBlock LOGICAL_COMPARATOR_BLOCK = new LogicalComparatorBlock(
-          BlockBehaviour.Properties.ofFullCopy(Blocks.COMPARATOR).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "logical_comparator")))
+          BlockBehaviour.Properties.ofFullCopy(Blocks.COMPARATOR).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "logical_comparator")))
   );
   public static final SculkChamberBlock SCULK_CHAMBER_BLOCK = new SculkChamberBlock(
-          BlockBehaviour.Properties.of().strength(1.0f).noOcclusion().setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "sculk_chamber")))
+          BlockBehaviour.Properties.of().strength(1.0f).noOcclusion().setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "sculk_chamber")))
   );
   public static final SculkNoteBlock SCULK_NOTE_BLOCK = new SculkNoteBlock(
-          BlockBehaviour.Properties.ofFullCopy(Blocks.NOTE_BLOCK).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "sculk_note_block")))
+          BlockBehaviour.Properties.ofFullCopy(Blocks.NOTE_BLOCK).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "sculk_note_block")))
   );
   public static final SculkPulserBlock SCULK_PULSER_BLOCK = new SculkPulserBlock(
-          BlockBehaviour.Properties.of().strength(1.0f).noOcclusion().setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "sculk_pulser")))
+          BlockBehaviour.Properties.of().strength(1.0f).noOcclusion().setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "sculk_pulser")))
   );
   public static final DuctBlock DUCT_BLOCK = new DuctBlock(
-          BlockBehaviour.Properties.of().strength(1.0f).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "duct")))
+          BlockBehaviour.Properties.of().strength(1.0f).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "duct")))
   );
   public static final BuddingEchoBlock BUDDING_ECHO_BLOCK = new BuddingEchoBlock(
-          BlockBehaviour.Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "budding_echo")))
+          BlockBehaviour.Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "budding_echo")))
   );
   public static final EchoClusterBlock ECHO_CLUSTER_BLOCK = new EchoClusterBlock(
           7.0f,
           3.0f,
-          BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "echo_cluster")))
+          BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "echo_cluster")))
   );
   public static final EchoClusterBlock LARGE_ECHO_BUD_BLOCK = new EchoClusterBlock(
           5.0f,
           3.0f,
-          BlockBehaviour.Properties.ofFullCopy(Blocks.LARGE_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "large_echo_bud")))
+          BlockBehaviour.Properties.ofFullCopy(Blocks.LARGE_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "large_echo_bud")))
   );
   public static final EchoClusterBlock MEDIUM_ECHO_BUD_BLOCK = new EchoClusterBlock(
           4.0f,
           3.0f,
-          BlockBehaviour.Properties.ofFullCopy(Blocks.MEDIUM_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "medium_echo_bud")))
+          BlockBehaviour.Properties.ofFullCopy(Blocks.MEDIUM_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "medium_echo_bud")))
   );
   public static final EchoClusterBlock SMALL_ECHO_BUD_BLOCK = new EchoClusterBlock(
           3.0f,
           4.0f,
-          BlockBehaviour.Properties.ofFullCopy(Blocks.SMALL_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, "small_echo_bud")))
+          BlockBehaviour.Properties.ofFullCopy(Blocks.SMALL_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "small_echo_bud")))
   );
 
   public static BlockEntityType<LogicalComparatorBlockEntity> LOGICAL_COMPARATOR_BLOCK_ENTITY;
   public static BlockEntityType<SculkChamberBlockEntity> SCULK_CHAMBER_BLOCK_ENTITY;
   public static BlockEntityType<DuctBlockEntity> DUCT_BLOCK_ENTITY;
 
-  public static final Identifier NOTE_BLOCK_SOUND_ID = Identifier.parse("redstoneoverpower:sculk_note_block_sound");
+  public static final Identifier NOTE_BLOCK_SOUND_ID = Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID,"sculk_note_block_sound");
   public static SoundEvent NOTE_BLOCK_SOUND_EVENT = SoundEvent.createVariableRangeEvent(NOTE_BLOCK_SOUND_ID);
 
   public static final MenuType<DuctScreenHandler> DUCT_SCREEN_HANDLER = new MenuType<>(
@@ -80,8 +80,8 @@ public class Initialiser {
   );
 
   private static void registerBlockItem(String path, Block block) {
-    ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(MOD_ID, path));
-    ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(MOD_ID, path));
+    ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, path));
+    ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, path));
 
     Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
     Registry.register(BuiltInRegistries.ITEM, itemKey, new BlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(itemKey)));
@@ -94,7 +94,7 @@ public class Initialiser {
   ) {
     registerBlockItem(path, block);
 
-    return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(MOD_ID, path), blockEntityType);
+    return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, path), blockEntityType);
   }
 
   public static void initBlockItems() {
@@ -125,7 +125,7 @@ public class Initialiser {
     );
 
     // Screen handlers
-    Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(MOD_ID, "duct"), DUCT_SCREEN_HANDLER);
+    Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "duct"), DUCT_SCREEN_HANDLER);
 
     // Sounds
     Registry.register(BuiltInRegistries.SOUND_EVENT, NOTE_BLOCK_SOUND_ID, NOTE_BLOCK_SOUND_EVENT);

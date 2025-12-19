@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "redstoneoverpower:item/sculk_sensor"
+    "model": "redstoneoverpower:item/sculk_pulser"
   }
 }

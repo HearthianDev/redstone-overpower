@@ -1,10 +1,9 @@
-
 {
 	"ambientocclusion": false,
 	"textures": {
-		"X": "redstoneoverpower:item/echo_cluster_x",
-		"Y": "redstoneoverpower:item/echo_cluster_y",
-		"particle": "redstoneoverpower:item/echo_cluster"
+		"X": "redstoneoverpower:block/echo_cluster",
+		"Y": "redstoneoverpower:block/echo_cluster",
+		"particle": "redstoneoverpower:block/echo_cluster"
 	},
 	"elements": [
 		{

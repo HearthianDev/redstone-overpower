@@ -10,7 +10,6 @@
     "block.redstoneoverpower.medium_echo_bud": "Brote de cristal de eco mediano",
     "block.redstoneoverpower.small_echo_bud": "Brote de cristal de eco pequeño",
     "container.redstoneoverpower.duct": "Ducto",
-    "gui.enable_filter": "Pulsa para activar modo filtro",
-    "gui.disable_filter": "Pulsa para desactivar modo filtro",
+    "gui.enable_filter": "Haz click para activar el filtro",
     "subtitles.redstoneoverpower.sculk_note_block_sound": "Bloque musical de sculk"
 }

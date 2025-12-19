@@ -1,5 +1,6 @@
 package net.HearthianDev.redstoneoverpower.client.gui.screen.ingame;
 
+import net.HearthianDev.redstoneoverpower.RedstoneOverpower;
 import net.HearthianDev.redstoneoverpower.block.screen.DuctScreenHandler;
 import net.HearthianDev.redstoneoverpower.block.screen.DuctSlot;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,10 +16,9 @@ import net.minecraft.world.inventory.Slot;
 import org.jspecify.annotations.NonNull;
 
 public class DuctScreen extends AbstractContainerScreen<DuctScreenHandler> {
-  private static final Identifier FILTER_SLOT_TEXTURE = Identifier.parse("container/crafter/disabled_slot");
   private static final Component ENABLE_FILTER_TEXT = Component.translatable("gui.enable_filter");
-  private static final Component DISABLE_FILTER_TEXT = Component.translatable("gui.disable_filter");
-  private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("redstoneoverpower", "textures/gui/container/duct.png");
+  private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "textures/gui/container/duct.png");
+  private static final Identifier FILTER_SLOT_TEXTURE = Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "textures/gui/sprites/container/duct/filter_slot.png");
 
   private final Player player;
 
@@ -33,8 +33,8 @@ public class DuctScreen extends AbstractContainerScreen<DuctScreenHandler> {
   public void render(@NonNull GuiGraphics context, int mouseX, int mouseY, float delta) {
     super.render(context, mouseX, mouseY, delta);
     this.renderTooltip(context, mouseX, mouseY);
-    if (this.hoveredSlot instanceof DuctSlot && this.menu.getCarried().isEmpty() && !this.hoveredSlot.hasItem()) {
-      context.setTooltipForNextFrame(this.font, this.menu.isSlotDisabled(this.hoveredSlot.index) ? DISABLE_FILTER_TEXT : ENABLE_FILTER_TEXT, mouseX, mouseY);
+    if (this.hoveredSlot instanceof DuctSlot && this.menu.getCarried().isEmpty() && !this.hoveredSlot.hasItem() && !this.menu.isSlotDisabled(this.hoveredSlot.index)) {
+      context.setTooltipForNextFrame(this.font, ENABLE_FILTER_TEXT, mouseX, mouseY);
     }
   }
 
@@ -75,8 +75,8 @@ public class DuctScreen extends AbstractContainerScreen<DuctScreenHandler> {
   }
 
   private void drawDisabledSlot(GuiGraphics context, DuctSlot slot) {
-    context.blitSprite(RenderPipelines.GUI_TEXTURED, FILTER_SLOT_TEXTURE, slot.x - 1, slot.y - 1, 18, 18);
-    context.renderItemDecorations(this.font, slot.getItem(), slot.x, slot.y);
     context.renderItem(slot.getItem(), slot.x, slot.y);
+    context.renderItemDecorations(this.font, slot.getItem(), slot.x, slot.y);
+    context.blit(RenderPipelines.GUI_TEXTURED, FILTER_SLOT_TEXTURE, slot.x - 1, slot.y - 1, 18, 18, 18, 18, 18, 18);
   }
 }

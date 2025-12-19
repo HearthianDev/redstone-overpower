@@ -1,8 +1,8 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "all": "redstoneoverpower:item/large_echo_bud",
-    "particle": "redstoneoverpower:item/echo_cluster"
+    "all": "redstoneoverpower:block/large_echo_bud",
+    "particle": "redstoneoverpower:block/large_echo_bud"
   },
   "elements": [
     {
