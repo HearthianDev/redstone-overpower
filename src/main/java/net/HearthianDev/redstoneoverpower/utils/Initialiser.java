@@ -48,22 +48,22 @@ public class Initialiser {
   );
   public static final EchoClusterBlock ECHO_CLUSTER_BLOCK = new EchoClusterBlock(
           7.0f,
-          3.0f,
+          10.0f,
           BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "echo_cluster")))
   );
   public static final EchoClusterBlock LARGE_ECHO_BUD_BLOCK = new EchoClusterBlock(
           5.0f,
-          3.0f,
+          10.0f,
           BlockBehaviour.Properties.ofFullCopy(Blocks.LARGE_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "large_echo_bud")))
   );
   public static final EchoClusterBlock MEDIUM_ECHO_BUD_BLOCK = new EchoClusterBlock(
           4.0f,
-          3.0f,
+          10.0f,
           BlockBehaviour.Properties.ofFullCopy(Blocks.MEDIUM_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "medium_echo_bud")))
   );
   public static final EchoClusterBlock SMALL_ECHO_BUD_BLOCK = new EchoClusterBlock(
           3.0f,
-          4.0f,
+          8.0f,
           BlockBehaviour.Properties.ofFullCopy(Blocks.SMALL_AMETHYST_BUD).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(RedstoneOverpower.MOD_ID, "small_echo_bud")))
   );
 

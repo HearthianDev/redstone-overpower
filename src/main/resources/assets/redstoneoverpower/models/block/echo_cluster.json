@@ -1,8 +1,7 @@
 {
 	"ambientocclusion": false,
 	"textures": {
-		"X": "redstoneoverpower:block/echo_cluster",
-		"Y": "redstoneoverpower:block/echo_cluster",
+		"all": "redstoneoverpower:block/echo_cluster",
 		"particle": "redstoneoverpower:block/echo_cluster"
 	},
 	"elements": [
@@ -12,8 +11,8 @@
 			"shade": false,
 			"rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8], "rescale": true},
 			"faces": {
-				"north": {"uv": [0, 0, 14, 16], "texture": "#Y"},
-				"south": {"uv": [0, 0, 14, 16], "texture": "#Y"}
+				"north": {"uv": [0, 0, 16, 16], "texture": "#all"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#all"}
 			}
 		},
 		{
@@ -22,8 +21,8 @@
 			"shade": false,
 			"rotation": {"angle": 45, "axis": "y", "origin": [8, 8, 8], "rescale": true},
 			"faces": {
-				"east": {"uv": [0, 0, 16, 16], "texture": "#X"},
-				"west": {"uv": [0, 0, 16, 16], "texture": "#X"}
+				"east": {"uv": [0, 0, 16, 16], "texture": "#all"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#all"}
 			}
 		}
 	]
