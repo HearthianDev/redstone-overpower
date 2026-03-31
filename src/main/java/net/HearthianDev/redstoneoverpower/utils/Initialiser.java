@@ -1,7 +1,7 @@
 package net.HearthianDev.redstoneoverpower.utils;
 
 import net.HearthianDev.redstoneoverpower.RedstoneOverpower;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -132,18 +132,18 @@ public class Initialiser {
   }
 
   public static void initCreativePlacement() {
-    ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(content -> {
-      content.addAfter(Items.COMPARATOR, LOGICAL_COMPARATOR_BLOCK);
-      content.addAfter(LOGICAL_COMPARATOR_BLOCK, SCULK_CHAMBER_BLOCK);
-      content.addAfter(SCULK_CHAMBER_BLOCK, SCULK_NOTE_BLOCK);
-      content.addAfter(SCULK_NOTE_BLOCK, SCULK_PULSER_BLOCK);
+    CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(content -> {
+      content.insertAfter(Items.COMPARATOR, LOGICAL_COMPARATOR_BLOCK);
+      content.insertAfter(LOGICAL_COMPARATOR_BLOCK, SCULK_CHAMBER_BLOCK);
+      content.insertAfter(SCULK_CHAMBER_BLOCK, SCULK_NOTE_BLOCK);
+      content.insertAfter(SCULK_NOTE_BLOCK, SCULK_PULSER_BLOCK);
     });
-    ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(content -> {
-      content.addAfter(Items.SCULK_VEIN, BUDDING_ECHO_BLOCK);
-      content.addAfter(BUDDING_ECHO_BLOCK, ECHO_CLUSTER_BLOCK);
-      content.addAfter(ECHO_CLUSTER_BLOCK, LARGE_ECHO_BUD_BLOCK);
-      content.addAfter(LARGE_ECHO_BUD_BLOCK, MEDIUM_ECHO_BUD_BLOCK);
-      content.addAfter(MEDIUM_ECHO_BUD_BLOCK, SMALL_ECHO_BUD_BLOCK);
+    CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.NATURAL_BLOCKS).register(content -> {
+      content.insertAfter(Items.SCULK_VEIN, BUDDING_ECHO_BLOCK);
+      content.insertAfter(BUDDING_ECHO_BLOCK, ECHO_CLUSTER_BLOCK);
+      content.insertAfter(ECHO_CLUSTER_BLOCK, LARGE_ECHO_BUD_BLOCK);
+      content.insertAfter(LARGE_ECHO_BUD_BLOCK, MEDIUM_ECHO_BUD_BLOCK);
+      content.insertAfter(MEDIUM_ECHO_BUD_BLOCK, SMALL_ECHO_BUD_BLOCK);
     });
   }
 }

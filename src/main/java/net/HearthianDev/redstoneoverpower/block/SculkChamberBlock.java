@@ -74,7 +74,7 @@ public class SculkChamberBlock extends BaseEntityBlock {
         if (getMode(state) != SculkChamberMode.CHARGED) {
             if (getMode(state) == SculkChamberMode.COOLDOWN) {
                 world.setBlock(pos, state.setValue(MODE, world.hasNeighborSignal(pos) ? SculkChamberMode.ISOLATED : SculkChamberMode.LISTEN), Block.UPDATE_CLIENTS);
-                world.playSound(null, pos, SoundEvents.SCULK_CLICKING_STOP, SoundSource.BLOCKS, 1.0f, world.random.nextFloat() * 0.2f + 0.8f);
+                world.playSound(null, pos, SoundEvents.SCULK_CLICKING_STOP, SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.2f + 0.8f);
             }
             return;
         }
@@ -88,7 +88,7 @@ public class SculkChamberBlock extends BaseEntityBlock {
             return SculkChamberBlock.createTickerHelper(
                 type,
                 SCULK_CHAMBER_BLOCK_ENTITY,
-                (worldx, pos, statex, blockEntity) -> VibrationSystem.Ticker.tick(worldx, blockEntity.getVibrationData(), blockEntity.getVibrationUser())
+                (worldx, _, _, blockEntity) -> VibrationSystem.Ticker.tick(worldx, blockEntity.getVibrationData(), blockEntity.getVibrationUser())
             );
         }
         return null;
@@ -159,7 +159,7 @@ public class SculkChamberBlock extends BaseEntityBlock {
             SoundEvents.SCULK_CLICKING,
             SoundSource.BLOCKS,
             1.0f,
-            world.random.nextFloat() * 0.2f + 0.8f
+            world.getRandom().nextFloat() * 0.2f + 0.8f
         );
     }
 

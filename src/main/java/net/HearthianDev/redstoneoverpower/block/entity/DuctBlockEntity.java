@@ -159,7 +159,7 @@ public class DuctBlockEntity extends RandomizableContainerBlockEntity {
       inventory = ChestBlock.getContainer((ChestBlock)block, blockState, world, blockPos, true);
     }
     if (inventory == null && !(list = world.getEntities((Entity) null, new AABB(x - 0.5, y - 0.5, z - 0.5, x + 0.5, y + 0.5, z + 0.5), EntitySelector.CONTAINER_ENTITY_SELECTOR)).isEmpty()) {
-      inventory = (Container) list.get(world.random.nextInt(list.size()));
+      inventory = (Container) list.get(world.getRandom().nextInt(list.size()));
     }
     return inventory;
   }

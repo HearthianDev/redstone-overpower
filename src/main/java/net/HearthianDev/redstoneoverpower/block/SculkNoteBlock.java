@@ -104,7 +104,7 @@ public class SculkNoteBlock extends Block {
             SoundSource.RECORDS,
             3.0f,
             NoteBlock.getPitchFromNote(i),
-            world.random.nextLong()
+            world.getRandom().nextLong()
         );
 
         return true;

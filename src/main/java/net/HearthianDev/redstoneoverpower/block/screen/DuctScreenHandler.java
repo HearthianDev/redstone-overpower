@@ -6,7 +6,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
@@ -52,9 +52,9 @@ public class DuctScreenHandler extends AbstractContainerMenu {
   }
 
   @Override
-  public void clicked(int slotIndex, int button, @NonNull ClickType actionType, @NonNull Player player) {
+  public void clicked(int slotIndex, int button, @NonNull ContainerInput actionType, @NonNull Player player) {
     if (slotIndex == 0) {
-      if (actionType == ClickType.PICKUP && getCarried().isEmpty() && !getSlot(slotIndex).hasItem()) {
+      if (actionType == ContainerInput.PICKUP && getCarried().isEmpty() && !getSlot(slotIndex).hasItem()) {
         this.toggleSlot(slotIndex);
       }
     }
